@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Determinan Solver - Cek Hasil & Langkah Cara (2x2, 3x3, 4x4)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for rendering Math LaTeX -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .matrix-bracket {
+            position: relative;
+            padding: 8px 16px;
+        }
+        .matrix-bracket::before, .matrix-bracket::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 10px;
+            border: 3px solid #0284c7;
+        }
+        .matrix-bracket::before {
+            left: 0;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+        }
+        .matrix-bracket::after {
+            right: 0;
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans min-h-screen flex flex-col transition-colors duration-300">
+
+    <header class="sticky top-0 z-40 bg-slate-900/95 text-white backdrop-blur-md border-b border-slate-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchSection('solver')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/30">
+                        <span class="font-extrabold text-lg font-mono">det</span>
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-white via-slate-100 to-sky-300 bg-clip-text text-transparent">MatriLengkap</span>
+                        <span class="block text-[10px] text-sky-300 font-medium tracking-wider uppercase -mt-1">Kalkulator & Solver Determinan Matriks</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs (Desktop) -->
+                <nav class="hidden md:flex space-x-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/50">
+                    <button onclick="switchSection('solver')" id="nav-btn-solver" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-brand-600 text-white shadow">
+                        <i class="fa-solid fa-calculator mr-2"></i>Kalkulator & Cek Hasil
+                    </button>
+                    <button onclick="switchSection('questions')" id="nav-btn-questions" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-700/50">
+                        <i class="fa-solid fa-pen-to-square mr-2"></i>Bank & Edit Soal
+                    </button>
+                    <button onclick="switchSection('theory')" id="nav-btn-theory" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-700/50">
+                        <i class="fa-solid fa-book-open mr-2"></i>Rumus, Teori & Tabel Perkalian
+                    </button>
+                </nav>
+
+                <div class="flex items-center space-x-3">
+                    <!-- Theme Toggle Button -->
+                    <button onclick="toggleTheme()" id="theme-toggle-btn" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center space-x-2 text-xs font-semibold border border-slate-700 shadow-inner" title="Ganti Tema (Terang / Gelap)">
+                        <i id="theme-toggle-icon" class="fa-solid fa-sun text-amber-400 text-sm"></i>
+                        <span id="theme-toggle-text" class="hidden sm:inline">Modus Terang</span>
+                    </button>
+
+                    <span class="hidden lg:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                        <span class="w-2 h-2 rounded-full bg-sky-400 mr-2 animate-pulse"></span> Step-by-Step Solver
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Tabs -->
+        <div class="md:hidden flex border-t border-slate-800 bg-slate-900/90 px-2 py-2 overflow-x-auto gap-1">
+            <button onclick="switchSection('solver')" id="mob-nav-solver" class="flex-1 min-w-max text-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white">
+                <i class="fa-solid fa-calculator mr-1"></i>Kalkulator
+            </button>
+            <button onclick="switchSection('questions')" id="mob-nav-questions" class="flex-1 min-w-max text-center px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800">
+                <i class="fa-solid fa-pen-to-square mr-1"></i>Bank Soal
+            </button>
+            <button onclick="switchSection('theory')" id="mob-nav-theory" class="flex-1 min-w-max text-center px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800">
+                <i class="fa-solid fa-book-open mr-1"></i>Teori & Perkalian
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ================= MAIN SOLVER SECTION ================= -->
+        <section id="sec-solver" class="sec-content space-y-8">
+            <!-- Header Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-sky-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-3xl space-y-3">
+                    <span class="bg-sky-500/20 text-sky-300 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-sky-400/20 inline-block">
+                        Hitung Determinan Matriks Interaktif
+                    </span>
+                    <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">Hitung Determinan Matriks & Langkah Perhitungannya</h1>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                        Pilih ordo matriks di bawah ini. Ketika tombol ordo diklik, soal matriks akan **langsung diperbarui**. Klik tombol **"Cek Hasil & Caranya"** untuk menampilkan hasil determinan beserta jabaran rumus langkah demi langkah.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 sm:p-8 space-y-6 transition-colors">
+                <!-- Ordo Selector Section -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100 dark:border-slate-800">
+                    <div>
+                        <h2 class="font-bold text-slate-800 dark:text-slate-100 text-lg flex items-center">
+                            <i class="fa-solid fa-shapes text-brand-600 dark:text-sky-400 mr-2"></i> Pilih Ordo Matriks
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Klik ordo untuk mengganti ukuran & soal secara langsung</p>
+                    </div>
+
+                    <!-- Ordo Switch Buttons -->
+                    <div class="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <button onclick="setMatrixOrdo(2)" id="ordo-btn-2" class="ordo-btn px-5 py-2 rounded-xl font-extrabold text-sm transition-all duration-200 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-sm border border-slate-200 dark:border-slate-700">
+                            2 × 2
+                        </button>
+                        <button onclick="setMatrixOrdo(3)" id="ordo-btn-3" class="ordo-btn px-5 py-2 rounded-xl font-extrabold text-sm transition-all duration-200 bg-brand-600 text-white shadow-md">
+                            3 × 3
+                        </button>
+                        <button onclick="setMatrixOrdo(4)" id="ordo-btn-4" class="ordo-btn px-5 py-2 rounded-xl font-extrabold text-sm transition-all duration-200 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-sm border border-slate-200 dark:border-slate-700">
+                            4 × 4
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Matrix Controls & Method Selector -->
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center space-x-2 bg-slate-50 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+                        <label class="text-slate-500 dark:text-slate-400">Metode Perhitungan:</label>
+                        <select id="det-method" class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-2.5 py-1 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="auto">Otomatis (Sarrus / Kofaktor)</option>
+                            <option value="sarrus">Aturan Sarrus (Khusus 2x2 & 3x3)</option>
+                            <option value="cofactor">Ekspansi Kofaktor (Minor-Kofaktor)</option>
+                        </select>
+                    </div>
+
+                    <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Elemen matriks dapat diketik manual atau diacak.
+                    </div>
+                </div>
+
+                <!-- Interactive Matrix Grid Input -->
+                <div class="flex flex-col items-center justify-center my-6">
+                    <div class="matrix-bracket p-4 bg-slate-50/80 dark:bg-slate-800/50 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 shadow-inner">
+                        <div id="det-grid" class="grid gap-2 sm:gap-3 transition-all duration-300"></div>
+                    </div>
+
+                    <!-- Presets & Quick Actions -->
+                    <div class="pt-6 flex flex-wrap gap-2 justify-center text-xs font-semibold">
+                        <button onclick="generateRandomMatrix()" class="px-3.5 py-2 rounded-xl bg-brand-50 dark:bg-sky-950/60 hover:bg-brand-100 dark:hover:bg-sky-900/80 text-brand-700 dark:text-sky-300 transition flex items-center border border-brand-200 dark:border-sky-800">
+                            <i class="fa-solid fa-dice mr-1.5"></i>Acak Soal Baru
+                        </button>
+                        <button onclick="fillMatrixPreset('identity')" class="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition border border-slate-200 dark:border-slate-700">
+                            Identitas
+                        </button>
+                        <button onclick="fillMatrixPreset('zero')" class="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition border border-slate-200 dark:border-slate-700">
+                            Matriks Nol
+                        </button>
+                        <button onclick="resetMatrixToSample()" class="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition border border-slate-200 dark:border-slate-700">
+                            <i class="fa-solid fa-rotate-right mr-1"></i>Reset Sample
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Primary Action Button: Cek Hasil & Caranya -->
+                <div class="pt-2 flex justify-center">
+                    <button onclick="calculateDeterminant()" class="w-full sm:w-auto min-w-[280px] px-8 py-3.5 bg-brand-600 hover:bg-brand-700 active:scale-98 text-white font-extrabold rounded-2xl shadow-lg shadow-brand-600/30 transition duration-200 flex items-center justify-center text-base">
+                        <i class="fa-solid fa-calculator mr-2.5 text-lg"></i> Cek Hasil & Caranya
+                    </button>
+                </div>
+            </div>
+
+            <!-- Determinant Result & Steps Card -->
+            <div id="det-solution-card" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md p-6 sm:p-8 hidden transition-colors">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 mb-6">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-sky-300 flex items-center justify-center font-bold text-lg">
+                            <i class="fa-solid fa-square-root-variable"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100">Hasil Perhitungan & Langkah-Langkah</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Penjabaran langkah matematika terperinci</p>
+                        </div>
+                    </div>
+                    <button onclick="copySolution('det-solution-content')" class="text-slate-600 dark:text-slate-300 hover:text-brand-600 bg-slate-100 dark:bg-slate-800 hover:bg-brand-50 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center border border-slate-200 dark:border-slate-700">
+                        <i class="fa-regular fa-copy mr-1.5"></i> Salin Pembahasan
+                    </button>
+                </div>
+
+                <div id="det-solution-content" class="space-y-6 text-slate-700 dark:text-slate-300 leading-relaxed text-sm">
+                    <!-- Dynamic step-by-step content populated by JS -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= BANK & EDIT SOAL SECTION ================= -->
+        <section id="sec-questions" class="sec-content hidden space-y-8">
+            <!-- Header Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-indigo-400/20 inline-block mb-3">
+                            Bank Soal Determinan Interaktif
+                        </span>
+                        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-2">Bank & Editor Soal Determinan</h1>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl">
+                            Pilih soal untuk **langsung diisi ke kalkulator**, atau **edit pertanyaan dan matriks** sesuai dengan keinginan Anda!
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="openCreateQuestionModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition flex items-center text-sm">
+                            <i class="fa-solid fa-plus mr-2"></i> Buat Soal Baru
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Toolbar -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+                <div class="flex items-center space-x-2 w-full sm:w-auto">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Filter Ordo:</span>
+                    <select id="filter-ordo" onchange="renderQuestionBank()" class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200 focus:outline-none">
+                        <option value="all">Semua Ordo (2x2, 3x3, 4x4)</option>
+                        <option value="2">Ordo 2x2</option>
+                        <option value="3">Ordo 3x3</option>
+                        <option value="4">Ordo 4x4</option>
+                    </select>
+                </div>
+                <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    Total: <span id="question-count" class="font-bold text-slate-800 dark:text-slate-100">0</span> Soal Tersedia
+                </div>
+            </div>
+
+            <!-- Question Cards Grid -->
+            <div id="question-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Dynamic Questions Cards -->
+            </div>
+        </section>
+
+
+        <!-- ================= TEORI & RUMUS + KHUSUS PERKALIAN SECTION ================= -->
+        <section id="sec-theory" class="sec-content hidden space-y-8">
+            <!-- Header Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl">
+                <span class="bg-teal-500/20 text-teal-300 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-teal-400/20 inline-block mb-3">
+                    Panduan Matematika Lengkap & Referensi Perkalian
+                </span>
+                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-2">Rumus Matriks & Khusus Tabel Perkalian 1–100</h1>
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed max-w-3xl">
+                    Pelajari rumus & teori determinan matriks di sebelah kiri, dan gunakan **Modul Khusus Perkalian (1 s/d 100)** di sebelah kanan untuk membantu perhitungan cepat perkalian angka matriks!
+                </p>
+            </div>
+
+            <!-- MAIN GRID LAYOUT: THEORY ON LEFT, DEDICATED MULTIPLICATION SIDEBAR ON RIGHT -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- LEFT SIDE (7 Cols): MATRIX FORMULAS & THEORY -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center">
+                            <i class="fa-solid fa-book-open-reader text-teal-600 dark:text-teal-400 mr-2.5"></i> Rumus Determinan Matriks
+                        </h2>
+                        <span class="text-xs bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 font-bold px-2.5 py-1 rounded-lg">Konsep Dasar</span>
+                    </div>
+
+                    <!-- Ordo 2x2 Concept -->
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 flex items-center justify-center font-extrabold">
+                                2×2
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">1. Determinan Ordo 2x2</h3>
+                        </div>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Untuk matriks $A = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$, nilai determinan diperoleh dari hasil kali diagonal utama dikurangi hasil kali diagonal samping.
+                        </p>
+                        <div class="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-mono text-center text-slate-800 dark:text-slate-200">
+                            $$\det(A) = ad - bc$$
+                        </div>
+                    </div>
+
+                    <!-- Ordo 3x3 Sarrus Concept -->
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-brand-100 dark:bg-sky-950 text-brand-700 dark:text-sky-300 flex items-center justify-center font-extrabold">
+                                3×3
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">2. Metode Aturan Sarrus (3x3)</h3>
+                        </div>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Metode Sarrus dilakukan dengan menyalin kolom 1 dan kolom 2 ke sebelah kanan matriks, lalu mengalikan elemen diagonal utama (+), dikurangi hasil kali diagonal samping (−).
+                        </p>
+                        <div class="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-mono overflow-x-auto text-slate-800 dark:text-slate-200">
+                            $$\det = (a_{11}a_{22}a_{33} + a_{12}a_{23}a_{31} + a_{13}a_{21}a_{32}) - (a_{13}a_{22}a_{31} + a_{11}a_{23}a_{32} + a_{12}a_{21}a_{33})$$
+                        </div>
+                    </div>
+
+                    <!-- Cofactor Expansion Concept -->
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-extrabold">
+                                4×4
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">3. Ekspansi Kofaktor ( Minor-Kofaktor untuk Ordo 3x3 & 4x4 )</h3>
+                        </div>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Ekspansi kofaktor memecah matriks berukuran besar (misal 4x4) menjadi penjumlahan determinan sub-matriks minor berukuran lebih kecil (3x3).
+                        </p>
+                        <div class="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-mono overflow-x-auto text-center text-slate-800 dark:text-slate-200">
+                            $$\det(A) = \sum_{j=1}^{n} (-1)^{1+j} \cdot a_{1j} \cdot \det(M_{1j})$$
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT SIDE (5 Cols): DEDICATED MULTIPLICATION TOOL (1-100) -->
+                <div class="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border-2 border-amber-500/30 dark:border-amber-500/20 shadow-xl p-5 sm:p-6 space-y-5 transition-colors">
+                        
+                        <!-- Side Title & Header -->
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md font-extrabold">
+                                    <i class="fa-solid fa-table-cells text-base"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight">Khusus Modul Perkalian</h3>
+                                    <p class="text-[11px] text-amber-600 dark:text-amber-400 font-semibold uppercase tracking-wider">Tabel & Cek Perkalian (1 – 100)</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full font-bold">1–100</span>
+                        </div>
+
+                        <!-- Instant Calculator Helper Box -->
+                        <div class="bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 space-y-3">
+                            <label class="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center">
+                                <i class="fa-solid fa-bolt mr-1.5 text-amber-500"></i> Cek Cepat Perkalian 2 Angka
+                            </label>
+                            <div class="grid grid-cols-5 gap-2 items-center">
+                                <input type="number" id="quick-mult-a" value="7" min="1" max="100" oninput="calcQuickMult()" class="col-span-2 text-center bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700/60 rounded-xl py-1.5 font-mono font-bold text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                <span class="text-center font-extrabold text-amber-600 dark:text-amber-400 text-base">×</span>
+                                <input type="number" id="quick-mult-b" value="8" min="1" max="100" oninput="calcQuickMult()" class="col-span-2 text-center bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700/60 rounded-xl py-1.5 font-mono font-bold text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                            <div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-amber-200 dark:border-amber-800 text-center font-mono font-bold text-amber-700 dark:text-amber-300 text-sm shadow-sm">
+                                <span id="quick-mult-res">7 × 8 = 56</span>
+                            </div>
+                        </div>
+
+                        <!-- Multiplication Table Selector (1 to 100) -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center">
+                                    <i class="fa-solid fa-list-ol text-brand-600 dark:text-sky-400 mr-1.5"></i> Pilih Perkalian Angka (1–100):
+                                </label>
+                                <span id="selected-mult-badge" class="text-xs font-extrabold text-brand-600 dark:text-sky-400 bg-brand-50 dark:bg-sky-950 px-2 py-0.5 rounded-md">Tabel 7</span>
+                            </div>
+
+                            <div class="flex space-x-2">
+                                <select id="mult-number-select" onchange="changeMultNumber(this.value)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                    <!-- Populated via JavaScript from 1 to 100 -->
+                                </select>
+                            </div>
+
+                            <!-- Range Fast Jump Buttons -->
+                            <div class="space-y-1">
+                                <span class="text-[11px] font-semibold text-slate-400">Pintas Kelompok Range:</span>
+                                <div class="flex flex-wrap gap-1 text-[11px] font-bold">
+                                    <button onclick="changeMultNumber(1)" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-600 text-slate-600 dark:text-slate-300 rounded-lg transition">1–10</button>
+                                    <button onclick="changeMultNumber(11)" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-600 text-slate-600 dark:text-slate-300 rounded-lg transition">11–20</button>
+                                    <button onclick="changeMultNumber(25)" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-600 text-slate-600 dark:text-slate-300 rounded-lg transition">25</button>
+                                    <button onclick="changeMultNumber(50)" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-600 text-slate-600 dark:text-slate-300 rounded-lg transition">50</button>
+                                    <button onclick="changeMultNumber(75)" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-600 text-slate-600 dark:text-slate-300 rounded-lg transition">75</button>
+                                    <button onclick="changeMultNumber(100)" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-600 text-slate-600 dark:text-slate-300 rounded-lg transition">100</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rendered Multiplication Table Box -->
+                        <div class="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-inner bg-slate-50 dark:bg-slate-800/50">
+                            <div class="bg-slate-900 text-white px-4 py-2.5 text-xs font-bold flex justify-between items-center">
+                                <span id="mult-table-title"><i class="fa-solid fa-table mr-1.5 text-amber-400"></i> Tabel Perkalian Perkalian 7</span>
+                                <span class="text-[10px] text-slate-400">Daftar Perkalian × 1 s/d × 12</span>
+                            </div>
+                            
+                            <div id="mult-table-container" class="p-3 max-h-[320px] overflow-y-auto custom-scrollbar space-y-1.5">
+                                <!-- Populated dynamically by JavaScript -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL EDIT / BUAT SOAL -->
+    <div id="question-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+                <h3 id="modal-title" class="font-bold text-lg flex items-center">
+                    <i class="fa-solid fa-pen-to-square text-sky-400 mr-2"></i> Edit Pertanyaan Soal
+                </h3>
+                <button onclick="closeQuestionModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto custom-scrollbar space-y-4 text-sm text-slate-800 dark:text-slate-100">
+                <input type="hidden" id="edit-q-id">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2 space-y-1">
+                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">Judul Soal</label>
+                        <input type="text" id="edit-q-title" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Contoh: Determinan 3x3 Dasar">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">Ordo Matriks</label>
+                        <select id="edit-q-ordo" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                            <option value="2">2 × 2</option>
+                            <option value="3">3 × 3</option>
+                            <option value="4">4 × 4</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">Teks Pertanyaan Soal</label>
+                    <textarea id="edit-q-text" rows="2" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Tuliskan teks pertanyaan..."></textarea>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">Matriks (Format Baris Dipisah Koma)</label>
+                    <p class="text-[11px] text-slate-400">Contoh 2x2: 1,2 ; 3,4</p>
+                    <textarea id="edit-q-matrix" rows="3" class="w-full bg-white dark:bg-slate-800 font-mono border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" placeholder="1,2&#10;3,4"></textarea>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 flex justify-end space-x-3">
+                <button onclick="closeQuestionModal()" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-semibold transition">Batal</button>
+                <button onclick="saveQuestionFromModal()" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-bold shadow transition flex items-center">
+                    <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Soal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 text-center text-xs mt-auto">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>© 2026 <strong>MatriLengkap Solver</strong> - Platform Belajar Determinan Matriks & Tabel Perkalian 1–100 Interaktif.</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentOrdo = 3;
+        let isDarkMode = false;
+        let currentMultNum = 7;
+
+        // Initialize Theme Mode
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                setThemeMode(true);
+            } else {
+                setThemeMode(false);
+            }
+        }
+
+        function toggleTheme() {
+            setThemeMode(!isDarkMode);
+            showToast(`Berhasil berganti ke ${isDarkMode ? 'Modus Gelap (Dark Mode)' : 'Modus Terang (Light Mode)'}`);
+        }
+
+        function setThemeMode(dark) {
+            isDarkMode = dark;
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-toggle-icon');
+            const text = document.getElementById('theme-toggle-text');
+
+            if (dark) {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if (icon) icon.className = "fa-solid fa-moon text-sky-400 text-sm";
+                if (text) text.innerText = "Modus Gelap";
+            } else {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if (icon) icon.className = "fa-solid fa-sun text-amber-400 text-sm";
+                if (text) text.innerText = "Modus Terang";
+            }
+        }
+
+        // Sample presets for each matrix dimension
+        const sampleMatrices = {
+            2: [
+                [5, 3],
+                [2, 4]
+            ],
+            3: [
+                [1, 2, 0],
+                [3, -1, 1],
+                [0, 2, 4]
+            ],
+            4: [
+                [2, 0, 1, 3],
+                [0, 1, -1, 2],
+                [3, 1, 0, 1],
+                [1, 2, 0, 4]
+            ]
+        };
+
+        // Default Question Bank
+        let questionBank = [
+            {
+                id: 1,
+                title: "Soal Determinan Ordo 2x2",
+                ordo: 2,
+                text: "Hitunglah nilai determinan dari matriks $A$ berordo 2x2 berikut!",
+                matrix: [
+                    [5, 3],
+                    [2, 4]
+                ]
+            },
+            {
+                id: 2,
+                title: "Soal Determinan Ordo 3x3",
+                ordo: 3,
+                text: "Tentukan nilai determinan matriks $B$ menggunakan metode Sarrus!",
+                matrix: [
+                    [1, 2, 0],
+                    [3, -1, 1],
+                    [0, 2, 4]
+                ]
+            },
+            {
+                id: 3,
+                title: "Soal Determinan Ordo 4x4",
+                ordo: 4,
+                text: "Hitung nilai determinan matriks $C$ berordo 4x4 menggunakan ekspansi kofaktor!",
+                matrix: [
+                    [2, 0, 1, 3],
+                    [0, 1, -1, 2],
+                    [3, 1, 0, 1],
+                    [1, 2, 0, 4]
+                ]
+            }
+        ];
+
+        window.onload = function() {
+            initTheme();
+            setMatrixOrdo(3);
+            renderQuestionBank();
+            initMultiplicationOptions();
+            changeMultNumber(7);
+            calcQuickMult();
+        };
+
+        function switchSection(secId) {
+            document.querySelectorAll('.sec-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('sec-' + secId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = 'nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-700/50';
+            });
+            const activeBtn = document.getElementById('nav-btn-' + secId);
+            if (activeBtn) {
+                activeBtn.className = 'nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-brand-600 text-white shadow';
+            }
+
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        // --- KHUSUS MULTIPLICATION MODULE FUNCTIONS (1 TO 100) ---
+        function initMultiplicationOptions() {
+            const select = document.getElementById('mult-number-select');
+            if (!select) return;
+            select.innerHTML = '';
+            for (let i = 1; i <= 100; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `Tabel Perkalian ${i}`;
+                select.appendChild(opt);
+            }
+        }
+
+        function changeMultNumber(num) {
+            currentMultNum = parseInt(num) || 1;
+            const select = document.getElementById('mult-number-select');
+            if (select) select.value = currentMultNum;
+
+            const badge = document.getElementById('selected-mult-badge');
+            if (badge) badge.innerText = `Tabel ${currentMultNum}`;
+
+            const title = document.getElementById('mult-table-title');
+            if (title) title.innerHTML = `<i class="fa-solid fa-table mr-1.5 text-amber-400"></i> Tabel Perkalian ${currentMultNum}`;
+
+            renderMultiplicationTable(currentMultNum);
+        }
+
+        function renderMultiplicationTable(num) {
+            const container = document.getElementById('mult-table-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            for (let i = 1; i <= 12; i++) {
+                const res = num * i;
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 font-mono text-xs sm:text-sm hover:border-amber-400 transition";
+                row.innerHTML = `
+                    <span class="text-slate-600 dark:text-slate-400 font-semibold">${num} × ${i}</span>
+                    <span class="text-slate-400 dark:text-slate-500">=</span>
+                    <span class="font-extrabold text-amber-600 dark:text-amber-400">${res}</span>
+                `;
+                container.appendChild(row);
+            }
+        }
+
+        function calcQuickMult() {
+            const a = parseFloat(document.getElementById('quick-mult-a').value) || 0;
+            const b = parseFloat(document.getElementById('quick-mult-b').value) || 0;
+            const res = a * b;
+            const resEl = document.getElementById('quick-mult-res');
+            if (resEl) {
+                resEl.innerText = `${a} × ${b} = ${res}`;
+            }
+        }
+
+        // --- MATRIX SOLVER FUNCTIONS ---
+        function setMatrixOrdo(ordo) {
+            currentOrdo = parseInt(ordo);
+
+            // Update button styles
+            [2, 3, 4].forEach(size => {
+                const btn = document.getElementById(`ordo-btn-${size}`);
+                if (size === currentOrdo) {
+                    btn.className = "ordo-btn px-5 py-2 rounded-xl font-extrabold text-sm transition-all duration-200 bg-brand-600 text-white shadow-md";
+                } else {
+                    btn.className = "ordo-btn px-5 py-2 rounded-xl font-extrabold text-sm transition-all duration-200 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800";
+                }
+            });
+
+            // Regenerate matrix input grid with sample values
+            resetMatrixToSample();
+
+            // Hide previous solution output until user clicks "Cek Hasil & Caranya"
+            document.getElementById('det-solution-card').classList.add('hidden');
+
+            showToast(`Ordo matriks diubah ke ${currentOrdo}×${currentOrdo}. Soal baru telah dimuat!`);
+        }
+
+        function renderMatrixInputs(matrixData) {
+            const grid = document.getElementById('det-grid');
+            grid.style.gridTemplateColumns = `repeat(${currentOrdo}, minmax(0, 1fr))`;
+            grid.innerHTML = '';
+
+            for (let r = 0; r < currentOrdo; r++) {
+                for (let c = 0; c < currentOrdo; c++) {
+                    const val = matrixData && matrixData[r] && matrixData[r][c] !== undefined ? matrixData[r][c] : 0;
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.id = `cell-${r}-${c}`;
+                    input.value = val;
+                    
+                    // Dynamic styling based on size & theme
+                    const sizeClass = currentOrdo === 4 ? 'w-10 h-10 sm:w-12 sm:h-12 text-xs sm:text-sm' : 'w-12 h-12 sm:w-16 sm:h-14 text-sm sm:text-base';
+                    input.className = `${sizeClass} text-center font-mono font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:focus:ring-brand-900 outline-none transition shadow-sm`;
+                    grid.appendChild(input);
+                }
+            }
+        }
+
+        function resetMatrixToSample() {
+            const data = sampleMatrices[currentOrdo] || sampleMatrices[3];
+            renderMatrixInputs(data);
+        }
+
+        function generateRandomMatrix() {
+            let data = [];
+            for (let r = 0; r < currentOrdo; r++) {
+                let row = [];
+                for (let c = 0; c < currentOrdo; c++) {
+                    row.push(Math.floor(Math.random() * 17) - 8); // Random number -8 to 8
+                }
+                data.push(row);
+            }
+            renderMatrixInputs(data);
+            showToast("Berhasil membuat soal matriks acak baru!");
+        }
+
+        function fillMatrixPreset(preset) {
+            let data = [];
+            for (let r = 0; r < currentOrdo; r++) {
+                let row = [];
+                for (let c = 0; c < currentOrdo; c++) {
+                    if (preset === 'zero') row.push(0);
+                    else if (preset === 'identity') row.push(r === c ? 1 : 0);
+                }
+                data.push(row);
+            }
+            renderMatrixInputs(data);
+        }
+
+        function getMatrixFromInputs() {
+            let m = [];
+            for (let r = 0; r < currentOrdo; r++) {
+                let row = [];
+                for (let c = 0; c < currentOrdo; c++) {
+                    const el = document.getElementById(`cell-${r}-${c}`);
+                    row.push(parseFloat(el ? el.value : 0) || 0);
+                }
+                m.push(row);
+            }
+            return m;
+        }
+
+        function getDetRecursive(m) {
+            if (m.length === 1) return m[0][0];
+            if (m.length === 2) return (m[0][0] * m[1][1]) - (m[0][1] * m[1][0]);
+
+            let det = 0;
+            for (let c = 0; c < m[0].length; c++) {
+                let sub = [];
+                for (let r = 1; r < m.length; r++) {
+                    sub.push(m[r].filter((_, colIdx) => colIdx !== c));
+                }
+                const sign = (c % 2 === 0) ? 1 : -1;
+                det += sign * m[0][c] * getDetRecursive(sub);
+            }
+            return det;
+        }
+
+        function formatMatrixLatex(matrix) {
+            let str = "\\begin{pmatrix}";
+            for (let r = 0; r < matrix.length; r++) {
+                str += matrix[r].map(n => Number.isInteger(n) ? n : n.toFixed(2)).join(" & ");
+                if (r < matrix.length - 1) str += " \\\\ ";
+            }
+            str += "\\end{pmatrix}";
+            return str;
+        }
+
+        function calculateDeterminant() {
+            const matrix = getMatrixFromInputs();
+            const size = matrix.length;
+            const method = document.getElementById('det-method').value;
+
+            const card = document.getElementById('det-solution-card');
+            const content = document.getElementById('det-solution-content');
+            card.classList.remove('hidden');
+
+            const detVal = getDetRecursive(matrix);
+
+            let html = `
+                <div class="bg-gradient-to-r from-brand-500 to-sky-600 text-white p-5 rounded-2xl shadow-md flex items-center justify-between">
+                    <div>
+                        <span class="text-xs uppercase font-extrabold tracking-wider text-sky-100">Hasil Akhir Determinan</span>
+                        <h4 class="text-2xl sm:text-3xl font-extrabold tracking-tight mt-0.5">
+                            Hasil = <span class="underline underline-offset-4 font-mono">${detVal}</span>
+                        </h4>
+                        <p class="text-xs text-sky-100 mt-1">Matriks Ukuran ${size}×${size}</p>
+                    </div>
+                    <div class="text-4xl text-white/80">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-2">
+                    <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base">Soal Matriks:</h4>
+                    <div class="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 text-center font-mono text-base overflow-x-auto text-slate-800 dark:text-slate-200">
+                        $$A = ${formatMatrixLatex(matrix)}$$
+                    </div>
+                </div>
+            `;
+
+            // Case 1: Ordo 2x2
+            if (size === 2) {
+                const a = matrix[0][0], b = matrix[0][1], c = matrix[1][0], d = matrix[1][1];
+                const diagUtama = a * d;
+                const diagSamping = b * c;
+
+                html += `
+                    <div class="space-y-3 pt-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-sky-300 font-extrabold text-xs px-2.5 py-1 rounded-lg">Rumus Praktis 2×2</span>
+                            <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base">(Kiri Atas × Kanan Bawah) − (Kanan Atas × Kiri Bawah)</h4>
+                        </div>
+                        
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 space-y-4 text-sm">
+                            <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                                <p class="font-bold text-emerald-800 dark:text-emerald-300">Langkah 1: Kalikan Diagonal Utama (Miring Kanan)</p>
+                                <p class="font-mono text-emerald-700 dark:text-emerald-400 mt-1">${a} × ${d} = <strong>${diagUtama}</strong></p>
+                            </div>
+
+                            <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl">
+                                <p class="font-bold text-rose-800 dark:text-rose-300">Langkah 2: Kalikan Diagonal Samping (Miring Kiri)</p>
+                                <p class="font-mono text-rose-700 dark:text-rose-400 mt-1">${b} × ${c} = <strong>${diagSamping}</strong></p>
+                            </div>
+
+                            <div class="p-3 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl">
+                                <p class="font-bold text-sky-800 dark:text-sky-300">Langkah 3: Kurangi Langkah 1 dengan Langkah 2</p>
+                                <p class="font-mono text-sky-900 dark:text-sky-200 mt-1 text-base">${diagUtama} − (${diagSamping}) = <strong class="text-brand-600 dark:text-sky-400 font-extrabold text-xl">${detVal}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } 
+            // Case 2: Ordo 3x3 Sarrus
+            else if (size === 3 && (method === 'auto' || method === 'sarrus')) {
+                const m = matrix;
+                const p1 = m[0][0]*m[1][1]*m[2][2], p2 = m[0][1]*m[1][2]*m[2][0], p3 = m[0][2]*m[1][0]*m[2][1];
+                const totalTambah = p1 + p2 + p3;
+
+                const n1 = m[0][2]*m[1][1]*m[2][0], n2 = m[0][0]*m[1][2]*m[2][1], n3 = m[0][1]*m[1][0]*m[2][2];
+                const totalKurang = n1 + n2 + n3;
+
+                html += `
+                    <div class="space-y-3 pt-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-sky-300 font-extrabold text-xs px-2.5 py-1 rounded-lg">Metode Sarrus</span>
+                            <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base">Perkalian Diagonal Panah (3x3)</h4>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Salin 2 kolom pertama ke sebelah kanan matriks, lalu kalikan miring kanan (ditambah) dan miring kiri (dikurang).</p>
+                        
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 space-y-4 text-xs sm:text-sm">
+                            <!-- Langkah Ditambah -->
+                            <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl space-y-2">
+                                <p class="font-bold text-emerald-800 dark:text-emerald-300 text-sm"><i class="fa-solid fa-plus-circle mr-1.5"></i>Langkah 1: Kalikan 3 Diagonal Miring ke Kanan (Dijumlahkan)</p>
+                                <ul class="list-disc list-inside font-mono text-emerald-700 dark:text-emerald-400 space-y-1 pl-1">
+                                    <li>Diagonal 1 = (${m[0][0]} × ${m[1][1]} × ${m[2][2]}) = ${p1}</li>
+                                    <li>Diagonal 2 = (${m[0][1]} × ${m[1][2]} × ${m[2][0]}) = ${p2}</li>
+                                    <li>Diagonal 3 = (${m[0][2]} × ${m[1][0]} × ${m[2][1]}) = ${p3}</li>
+                                </ul>
+                                <p class="font-bold text-emerald-900 dark:text-emerald-200 border-t border-emerald-200 dark:border-emerald-800 pt-1.5 mt-1 font-mono">
+                                    Total Ditambah = ${p1} + (${p2}) + (${p3}) = ${totalTambah}
+                                </p>
+                            </div>
+
+                            <!-- Langkah Dikurang -->
+                            <div class="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl space-y-2">
+                                <p class="font-bold text-rose-800 dark:text-rose-300 text-sm"><i class="fa-solid fa-minus-circle mr-1.5"></i>Langkah 2: Kalikan 3 Diagonal Miring ke Kiri (Dikurangi)</p>
+                                <ul class="list-disc list-inside font-mono text-rose-700 dark:text-rose-400 space-y-1 pl-1">
+                                    <li>Diagonal 1 = (${m[0][2]} × ${m[1][1]} × ${m[2][0]}) = ${n1}</li>
+                                    <li>Diagonal 2 = (${m[0][0]} × ${m[1][2]} × ${m[2][1]}) = ${n2}</li>
+                                    <li>Diagonal 3 = (${m[0][1]} × ${m[1][0]} × ${m[2][2]}) = ${n3}</li>
+                                </ul>
+                                <p class="font-bold text-rose-900 dark:text-rose-200 border-t border-rose-200 dark:border-rose-800 pt-1.5 mt-1 font-mono">
+                                    Total Dikurang = ${n1} + (${n2}) + (${n3}) = ${totalKurang}
+                                </p>
+                            </div>
+
+                            <!-- Hasil Akhir -->
+                            <div class="p-4 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl space-y-1">
+                                <p class="font-bold text-sky-800 dark:text-sky-300">Langkah 3: Hitung Hasil Akhir</p>
+                                <p class="font-mono text-slate-700 dark:text-slate-300">(Total Ditambah) − (Total Dikurang)</p>
+                                <p class="font-mono text-brand-600 dark:text-sky-400 font-extrabold text-xl pt-1">
+                                    ${totalTambah} − (${totalKurang}) = ${detVal}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } 
+            // Case 3: Cofactor Expansion
+            else {
+                html += `
+                    <div class="space-y-3 pt-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-extrabold text-xs px-2.5 py-1 rounded-lg">Metode Tutup Baris & Kolom</span>
+                            <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base">Ekspansi Baris Pertama (${size}×${size})</h4>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Ambil angka baris paling atas satu per satu, tutup baris & kolomnya, lalu kalikan dengan matriks sisanya.</p>
+                        
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 space-y-4 text-xs sm:text-sm">
+                `;
+
+                let terms = [];
+
+                for (let c = 0; c < size; c++) {
+                    let sub = [];
+                    for (let r = 1; r < size; r++) {
+                        sub.push(matrix[r].filter((_, colIdx) => colIdx !== c));
+                    }
+                    const subVal = getDetRecursive(sub);
+                    const sign = (c % 2 === 0) ? 1 : -1;
+                    const termVal = sign * matrix[0][c] * subVal;
+                    terms.push(termVal);
+
+                    html += `
+                        <div class="p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl space-y-1.5 shadow-sm">
+                            <p class="font-bold text-slate-800 dark:text-slate-200">
+                                Angka ke-${c+1} pada baris atas: <span class="px-2 py-0.5 rounded bg-brand-50 dark:bg-sky-950 text-brand-700 dark:text-sky-300 font-mono font-bold">${matrix[0][c]}</span> 
+                                (Tanda: <strong class="${sign > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">${sign > 0 ? '+ (Plus)' : '- (Minus)'}</strong>)
+                            </p>
+                            <p class="text-slate-600 dark:text-slate-400">Matriks sisa setelah baris 1 & kolom ${c+1} ditutup:</p>
+                            <div class="font-mono text-center my-1 bg-slate-50 dark:bg-slate-800 p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+                                $$${formatMatrixLatex(sub)}$$
+                            </div>
+                            <p class="font-mono text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
+                                Hasil matriks sisa = <strong>${subVal}</strong>
+                            </p>
+                            <p class="font-mono text-brand-600 dark:text-sky-400 font-bold border-t border-slate-100 dark:border-slate-800 pt-1 text-sm">
+                                Nilai Bagian Ini = ${sign > 0 ? '+' : '−'}(${matrix[0][c]} × ${subVal}) = ${termVal}
+                            </p>
+                        </div>
+                    `;
+                }
+
+                html += `
+                            <div class="p-4 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl space-y-1">
+                                <p class="font-bold text-sky-800 dark:text-sky-300">Hasil Akhir (Jumlahkan Semua Bagian):</p>
+                                <p class="font-mono text-slate-700 dark:text-slate-300 text-sm">
+                                    ${terms.map(t => t < 0 ? `(${t})` : t).join(' + ')}
+                                </p>
+                                <p class="font-mono text-brand-600 dark:text-sky-400 font-extrabold text-xl pt-1">
+                                    Hasil = ${detVal}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = html;
+
+            // Smooth scroll to solution card
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+
+        function renderQuestionBank() {
+            const container = document.getElementById('question-list-container');
+            const filterOrdo = document.getElementById('filter-ordo').value;
+            container.innerHTML = '';
+
+            const filtered = filterOrdo === 'all' 
+                ? questionBank 
+                : questionBank.filter(q => q.ordo == filterOrdo);
+
+            document.getElementById('question-count').innerText = filtered.length;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center py-12 text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800">Belum ada soal untuk ordo ini. Klik "Buat Soal Baru" untuk membuat!</div>`;
+                return;
+            }
+
+            filtered.forEach((q) => {
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 flex flex-col justify-between space-y-4 transition-colors";
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-950 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">Ordo ${q.ordo}x${q.ordo}</span>
+                            <div class="flex items-center space-x-1">
+                                <button onclick="openEditQuestionModal(${q.id})" class="p-2 text-slate-400 hover:text-brand-600 dark:hover:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Edit Soal">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button onclick="deleteQuestion(${q.id})" class="p-2 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Hapus Soal">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base mb-1">${q.title}</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mb-3">${q.text}</p>
+                        
+                        <div class="bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-center font-mono text-sm overflow-x-auto text-slate-800 dark:text-slate-200">
+                            $$${formatMatrixLatex(q.matrix)}$$
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button onclick="loadQuestionToSolver(${q.id})" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs transition shadow flex items-center justify-center">
+                            <i class="fa-solid fa-arrow-right-to-bracket mr-2"></i> Muat Soal ke Kalkulator
+                        </button>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        function loadQuestionToSolver(id) {
+            const q = questionBank.find(item => item.id === id);
+            if (!q) return;
+
+            switchSection('solver');
+            setMatrixOrdo(q.ordo);
+            renderMatrixInputs(q.matrix);
+            showToast(`Soal "${q.title}" dimuat ke kalkulator!`);
+        }
+
+        function openCreateQuestionModal() {
+            document.getElementById('modal-title').innerHTML = `<i class="fa-solid fa-plus text-sky-400 mr-2"></i> Buat Soal Baru`;
+            document.getElementById('edit-q-id').value = '';
+            document.getElementById('edit-q-title').value = '';
+            document.getElementById('edit-q-ordo').value = '3';
+            document.getElementById('edit-q-text').value = '';
+            document.getElementById('edit-q-matrix').value = '1,2,0\n3,-1,1\n0,2,4';
+            document.getElementById('question-modal').classList.remove('hidden');
+        }
+
+        function openEditQuestionModal(id) {
+            const q = questionBank.find(item => item.id === id);
+            if (!q) return;
+
+            document.getElementById('modal-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-sky-400 mr-2"></i> Edit Pertanyaan Soal #${q.id}`;
+            document.getElementById('edit-q-id').value = q.id;
+            document.getElementById('edit-q-title').value = q.title;
+            document.getElementById('edit-q-ordo').value = q.ordo;
+            document.getElementById('edit-q-text').value = q.text;
+            
+            const matrixStr = q.matrix.map(row => row.join(',')).join('\n');
+            document.getElementById('edit-q-matrix').value = matrixStr;
+
+            document.getElementById('question-modal').classList.remove('hidden');
+        }
+
+        function closeQuestionModal() {
+            document.getElementById('question-modal').classList.add('hidden');
+        }
+
+        function saveQuestionFromModal() {
+            const id = document.getElementById('edit-q-id').value;
+            const title = document.getElementById('edit-q-title').value.trim() || 'Soal Matriks';
+            const ordo = parseInt(document.getElementById('edit-q-ordo').value);
+            const text = document.getElementById('edit-q-text').value.trim() || 'Hitung determinan matriks berikut:';
+            const rawMatrix = document.getElementById('edit-q-matrix').value.trim();
+
+            let matrix = [];
+            try {
+                const rows = rawMatrix.split('\n');
+                rows.forEach(r => {
+                    const cols = r.split(',').map(n => parseFloat(n.trim()) || 0);
+                    matrix.push(cols);
+                });
+            } catch(e) {
+                matrix = sampleMatrices[ordo];
+            }
+
+            if (id) {
+                const idx = questionBank.findIndex(item => item.id == id);
+                if (idx !== -1) {
+                    questionBank[idx] = { id: parseInt(id), title, ordo, text, matrix };
+                }
+            } else {
+                const newId = questionBank.length > 0 ? Math.max(...questionBank.map(q => q.id)) + 1 : 1;
+                questionBank.push({ id: newId, title, ordo, text, matrix });
+            }
+
+            closeQuestionModal();
+            renderQuestionBank();
+            showToast("Soal berhasil disimpan!");
+        }
+
+        function deleteQuestion(id) {
+            questionBank = questionBank.filter(q => q.id !== id);
+            renderQuestionBank();
+            showToast("Soal telah dihapus.");
+        }
+
+        function copySolution(containerId) {
+            const text = document.getElementById(containerId).innerText;
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            showToast("Pembahasan penyelesaian berhasil disalin!");
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 text-xs font-bold px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2 border border-slate-700 dark:border-slate-300 pointer-events-auto transition-all duration-300";
+            toast.innerHTML = `<i class="fa-solid fa-circle-info text-sky-400 dark:text-sky-600"></i><span>${msg}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
